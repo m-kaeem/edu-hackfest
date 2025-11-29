@@ -1,30 +1,59 @@
-import React, { useState } from 'react';
-import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
-import Scanner from './pages/Scanner';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('landing');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+// Pages
+import Landing from "./pages/Landing";
+import Dashboard from "./pages/Dashboard";
+import Scanner from "./pages/Scanner";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import BatchDetailPage from "./components/BatchDetailPage";
 
-  const renderPage = () => {
-    if (!isLoggedIn && currentPage !== 'landing') {
-      return <Landing onLogin={() => setIsLoggedIn(true)} />;
-    }
-
-    switch (currentPage) {
-      case 'landing':
-        return <Landing onLogin={() => setIsLoggedIn(true)} />;
-      case 'dashboard':
-        return <Dashboard />;
-      case 'scanner':
-        return <Scanner />;
-      default:
-        return <Landing />;
-    }
-  };
-
-  return <div>{renderPage()}</div>;
+function PrivateRoute({ children }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
 }
 
-export default App;
+export default function App() {
+  return (
+    <Routes>
+
+      {/* Public */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* Private */}
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/scanner"
+        element={
+          <PrivateRoute>
+            <Scanner />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/batches/:id"
+        element={
+          <PrivateRoute>
+            <BatchDetailPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
+}
