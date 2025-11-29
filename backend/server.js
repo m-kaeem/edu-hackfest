@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const passport = require('./config/passport');
 require('dotenv').config();
 
 const app = express();
@@ -22,11 +23,14 @@ app.use('/api/', limiter);
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
-    : ['http://localhost:5173', 'http://localhost:3000'],
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'],
   credentials: true
 };
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Import routes
 const authRoutes = require('./routes/auth');
